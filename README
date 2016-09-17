@@ -1,0 +1,33 @@
+SETUP
+	COMMANDS
+		Make project directory
+			mkdir francis
+		Create virtual enviroment
+			pyvenv francis-env
+			source francis-env/bin/activate
+		Install packages
+			Install flask
+				pip install flask					
+			Install flask-sqlalchemy
+				pip install Flask-SQLAlchemy
+			Install psycopg3
+				pip install psycopg2
+			Install flask-migrate
+				pip install flask-migrate
+		Initialize your migrations folder (only if it does not exist)
+			python db.py db init
+		Update the migrations for your DB
+			python db.py db migrate
+		Run the migrations on your DB
+			python db.py db upgrade
+		Run the application
+			python application.py
+
+	RESOURCES
+		Setting up python3 anc creating virtual environment
+		http://www.marinamele.com/2014/07/install-python3-on-mac-os-x-and-use-virtualenv-and-virtualenvwrapper.html
+		Setting up flask app
+			Flask: https://www.youtube.com/watch?v=X1k36Pt-vzQ&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l&index=2
+			SQL`Alchemy & PostgreSQL: https://www.youtube.com/watch?v=PJK950Gp780&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l&index=3
+		Setting up migrations
+			Flask-Migrate: https://www.youtube.com/watch?v=BAOfjPuVby0
