@@ -1,7 +1,5 @@
 SETUP
 	COMMANDS
-		Make project directory
-			mkdir francis
 		Create virtual enviroment
 			pyvenv francis-env
 			source francis-env/bin/activate
@@ -9,8 +7,6 @@ SETUP
 			pip install -r requirements.txt
 		Add packages to application
 			pip freeze > requirements.txt
-		Initialize your migrations folder (only if it does not exist)
-			python db.py db init
 		Update the migrations for your DB
 			python db.py db migrate
 		Run the migrations on your DB
