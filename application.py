@@ -11,11 +11,6 @@ from db import Person
 application = Flask(__name__)
 app = application
 
-print ("=========================")
-print ("ENV VARIABLE:")
-print (os.environ['FRANCIS_DB_URI'])
-print ("=========================")
-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 
 db = SQLAlchemy(app)

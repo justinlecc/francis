@@ -24,17 +24,34 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
-class Person(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	username = db.Column(db.String(80), unique=True)
-	email = db.Column(db.String(120), unique=True)
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#
+# SCHEMA
+#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-	def __init__(self, username, email):
-		self.username = username
-		self.email = email
+# User
+# Each row represents a user of Francis. Currently assumes
+# each user only has one phone number.
+# 	id: primary key
+# 	phone_number: user's phone number
+class User(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	phone_number = db.Column(db.String(20), unique=True, index=True)
+
+	# def __init__(self, id, phone_number):
+	# 	self.id = id
+	# 	self.phone_number = phone_number
 
 	def __repr__(self):
-		return '<User %r>' % self.username
+		return '<User %r>' % self.phone_number
 
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#
+# RUN MANAGER (MIGRATIONS)
+#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 if __name__ == "__main__":
 	manager.run()
