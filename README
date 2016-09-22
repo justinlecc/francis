@@ -22,3 +22,25 @@ SETUP
 			SQL`Alchemy & PostgreSQL: https://www.youtube.com/watch?v=PJK950Gp780&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l&index=3
 		Setting up migrations
 			Flask-Migrate: https://www.youtube.com/watch?v=BAOfjPuVby0
+
+TWILIO
+	Incoming SMS
+		'AccountSid': '...db6d9a51...',
+	    'ApiVersion': '2010-04-01',
+	    'Body': 'Hi how are you?',
+	    'From': '+13067776666',
+	    'FromCity': 'SASKATOON',
+	    'FromCountry': 'CA',
+	    'FromState': 'SK',
+	    'FromZip': '',
+	    'MessageSid': 'SM605641f...',
+	    'NumMedia': '0',
+	    'NumSegments': '1',
+	    'SmsMessageSid': 'SM605641...',
+	    'SmsSid': 'SM605641f640...',
+	    'SmsStatus': 'received',
+	    'To': '+13066667777',
+	    'ToCity': '',
+	    'ToCountry': 'CA',
+	    'ToState': 'Saskatchewan',
+	    'ToZip': ''

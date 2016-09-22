@@ -1,6 +1,5 @@
 import os
 
-# from http://flask.pocoo.org/ tutorial
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -30,23 +29,36 @@ manager.add_command('db', MigrateCommand)
 #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# User
-# Each row represents a user of Francis. Currently assumes
-# each user only has one phone number.
+# Human
+# Each row represents a human user of Francis. Currently assumes
+# each human only has one phone number.
 # 	id: primary key
-# 	phone_number: user's phone number
-class User(db.Model):
+# 	phone_number: human's phone number
+class Human(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	phone_number = db.Column(db.String(20), unique=True, index=True)
+	nickname = db.Column(db.String(20))
+	messages = db.relationship('Message', backref='Human', lazy='dynamic')
 
-	# def __init__(self, id, phone_number):
-	# 	self.id = id
-	# 	self.phone_number = phone_number
+	def __init__(self, phone_number):
+		self.phone_number = phone_number
 
 	def __repr__(self):
-		return '<User %r>' % self.phone_number
+		return '<Human %r>' % self.phone_number
 
+# Message
+# Each row represents a message sent from a Human to Francis.
+# 	id: primary key
+#	text: body of the message
+# 	human: foreign key to human who sent the text
+class Message(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	text = db.Column(db.Text)
+	human_id = db.Column(db.Integer, db.ForeignKey('human.id'))
 
+	def __init__(self, text, human_id):
+		self.text = text
+		self.human_id = human_id
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #

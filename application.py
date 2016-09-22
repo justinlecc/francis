@@ -1,30 +1,45 @@
 import os
-
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
+from db import Human, Message
+import twilio.twiml	
+import pprint
+import time
 
-from db import Person
-
-# from flask_sqlalchemy import SQLAlchemy
-# from db import Person
-# App instance
 application = Flask(__name__)
 app = application
-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
-
 db = SQLAlchemy(app)
 
+@app.route("/sms", methods=['POST']) # endpoint for Twilio sms messages
+def incoming_sms():
 
-@app.route("/") # take note of this decorator syntax, it's a common pattern
-def hello():
-
+	# TODO: find/create a logging system
+	# Log incoming message
+	# with open('sms_posts.log', 'a') as f:
+	# 	f.write("\n\n===================================\n\n")
+	# 	f.write(time.strftime("%c\n"))
+	# 	pprint.pprint(vars(request.values), stream=f)
+	# 	f.write("\n\n===================================\n\n")
 	output_html = 'hello world'
 
-	# persons = Person.query.order_by(Person.email).all()
+	# Values in the sms
+	sms_from_phone_number = request.values.get("From")
+	sms_text = request.values.get("Body")
+
+	# Get the human from the DB
+	from_human = db.session.query(Human).filter_by(phone_number=sms_from_phone_number).first()
 	
-	# for person in persons:
-	# 	output_html += '<div>' + person.email + '</div>'
+	# Create the human if it does not exist
+	if from_human is None:
+		from_human = Human(sms_from_phone_number)
+		db.session.add(from_human)
+		db.session.commit()
+
+	# Insert the sms into the db
+	message = Message(sms_text, from_human.id)
+	db.session.add(message)
+	db.session.commit()
 
 	return output_html
 

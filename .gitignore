@@ -1,6 +1,13 @@
-
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# vitualenv files
 francis-env
+
+# compiled files
+__pycache__/
+
+# log files
+*.log
