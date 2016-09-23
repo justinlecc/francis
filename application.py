@@ -11,6 +11,12 @@ app = application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 db = SQLAlchemy(app)
 
+# Test the availability of Francis
+@app.route("/available", methods=['GET', 'POST'])
+def available():
+	return "Francis is available"
+
+# Endpoint for Twilio sms messages
 @app.route("/sms", methods=['POST']) # endpoint for Twilio sms messages
 def incoming_sms():
 
