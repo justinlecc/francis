@@ -1,0 +1,5 @@
+version: 1
+cron:
+ - name: "state assessment"
+   url: "/tasks/assessment"
+   schedule: "*/1 * * * *"
