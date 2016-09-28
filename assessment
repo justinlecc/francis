@@ -10,5 +10,5 @@ db = SQLAlchemy(app)
 
 message_receiver = MessageReceiver(db)
 from_phone_number = '666'
-text = "This is a test to see if the assessment daemon is running"
+text = "This is a test to see if the assessment daemon is running. I'm inside assessment.py"
 message_receiver.sms(from_phone_number, text)
