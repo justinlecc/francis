@@ -16,13 +16,13 @@ db = SQLAlchemy(app)
 def status ():
 	return "Francis is available"
 
-@app.route("/assessment", methods=['POST'])
-def assessment ():
-	message_receiver = MessageReceiver(db)
-	from_phone_number = '666'
-	text = "This is a test to see if the assessment daemon is running. I'm inside the /assessment route"
-	message_receiver.sms(from_phone_number, text)
-	return "/tasks/assessment returned"
+# @app.route("/assessment", methods=['POST'])
+# def assessment ():
+# 	message_receiver = MessageReceiver(db)
+# 	from_phone_number = '666'
+# 	text = "This is a test to see if the assessment daemon is running. I'm inside the /assessment route"
+# 	message_receiver.sms(from_phone_number, text)
+# 	return "/tasks/assessment returned"
 
 # Endpoint for Twilio sms messages
 @app.route("/twilio/sms", methods=['POST']) # endpoint for Twilio sms messages
