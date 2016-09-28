@@ -1,5 +1,5 @@
 version: 1
 cron:
  - name: "state assessment"
-   url: "/tasks/assessment"
+   url: "/assessment.py"
    schedule: "*/1 * * * *"
