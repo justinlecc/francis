@@ -13,13 +13,15 @@ app = application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 db = SQLAlchemy(app)
 
+# apply routes
+router = Router()
+router.applyRoutes(app)
+
 # Test to see if AWS will run the AssessmentWorker
 # assessment_worker = AssessmentWorker(db)
 # application = assessment_worker
 
 if __name__ == "__main__":
-	router = Router()
-	router.applyRoutes(app)
 	app.run()
 
 # if __name__ == "__main__" and os.environ['FRANCIS_PROCESS_TYPE'] == 'WEBSERVER':
