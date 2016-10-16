@@ -3,7 +3,7 @@ class Router():
 	def __init__(app):
 		pass
 
-	def applyRoutes(self, app):
+	def applyRoutes(self, app, db):
 		# Test the availability of Francis
 		@app.route("/status", methods=['GET', 'POST'])
 		def status ():

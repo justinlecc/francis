@@ -1,4 +1,4 @@
-import os
+import os, sys
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from message_receiver import MessageReceiver
@@ -15,14 +15,40 @@ db = SQLAlchemy(app)
 
 # apply routes
 router = Router()
-router.applyRoutes(app)
-
-# Test to see if AWS will run the AssessmentWorker
-# assessment_worker = AssessmentWorker(db)
-# application = assessment_worker
+router.applyRoutes(app, db)
 
 if __name__ == "__main__":
-	app.run()
+
+	# Initialization is a worker?
+	if len(sys.argv) >= 2:
+
+		if "assessment" == sys.argv[1]:
+			if len(sys.argv) == 3:
+				assessmentWorker = AssessmentWorker('/tmp/assessment-worker.pid')
+				assessmentWorker.setDb(db)
+				if "start" == sys.argv[2]:
+					assessmentWorker.start()
+				elif "restart" == sys.argv[2]:
+					assessmentWorker.restart()
+				elif "stop" == sys.argv[2]:
+					assessmentWorker.stop()
+				elif "foreground" == sys.argv[2]:
+					assessmentWorker.run()
+				else:
+					print("ERROR: Unknown argument for the assessment worker")
+			else:
+				print("ERROR: Incorrect number of parameters for the assessment worker")
+		else:
+			print("ERROR: Unknown process type in application.py")
+	
+	# Initialization is a webserver
+	# Note: Application will not be started here on Elastic Beanstalk.
+	#		Instead, EB will import the 'application' object and call
+	#       the 'run' method on it. Having app.run() here is for running
+	#       the application locally (or other non-EB environments).
+	else:
+		app.run()
+ 
 
 # if __name__ == "__main__" and os.environ['FRANCIS_PROCESS_TYPE'] == 'WEBSERVER':
 # 	router = Router()
