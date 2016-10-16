@@ -13,7 +13,7 @@ app = application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 db = SQLAlchemy(app)
 
-# apply routes
+# Apply routes
 router = Router()
 router.applyRoutes(app, db)
 
@@ -48,13 +48,3 @@ if __name__ == "__main__":
 	#       the application locally (or other non-EB environments).
 	else:
 		app.run()
- 
-
-# if __name__ == "__main__" and os.environ['FRANCIS_PROCESS_TYPE'] == 'WEBSERVER':
-# 	router = Router()
-# 	router.applyRoutes(app)
-# 	app.run()
-# elif __name__ == "__main__" and os.environ['FRANCIS_PROCESS_TYPE'] == 'ASSESSMENT_WORKER':
-# 	print ("Here I would run the Assessment Worker")
-# elif __name__ == "__main__":
-# 	print ("ERROR: unrecognized PROCESS_TYPE with __name == '__main__'")
