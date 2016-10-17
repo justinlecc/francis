@@ -1,12 +1,8 @@
 import os, sys
-from flask import Flask, request
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from message_receiver import MessageReceiver
 from webserver.router import Router
 from assessment.assessment_worker import AssessmentWorker
-import twilio.twiml	
-import pprint
-import time
 
 application = Flask(__name__)
 app = application

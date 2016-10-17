@@ -1,5 +1,4 @@
-import sys, time
-from db import Human, Message
+import time
 from lib.daemon import Daemon
 from message_receiver import MessageReceiver
 

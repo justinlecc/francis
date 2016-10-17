@@ -29,16 +29,16 @@ manager.add_command('db', MigrateCommand)
 #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Human
+# Humans
 # Each row represents a human user of Francis. Currently assumes
 # each human only has one phone number.
 # 	id: primary key
 # 	phone_number: human's phone number
-class Human(db.Model):
+class Humans(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	phone_number = db.Column(db.String(20), unique=True, index=True)
 	nickname = db.Column(db.String(20))
-	messages = db.relationship('Message', backref='Human', lazy='dynamic')
+	messages = db.relationship('Messages', backref='Humans', lazy='dynamic')
 
 	def __init__(self, phone_number):
 		self.phone_number = phone_number
@@ -46,15 +46,15 @@ class Human(db.Model):
 	def __repr__(self):
 		return '<Human %r>' % self.phone_number
 
-# Message
-# Each row represents a message sent from a Human to Francis.
+# Messages
+# Each row represents a messages sent from a Human to Francis.
 # 	id: primary key
 #	text: body of the message
 # 	human: foreign key to human who sent the text
-class Message(db.Model):
+class Messages(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	text = db.Column(db.Text)
-	human_id = db.Column(db.Integer, db.ForeignKey('human.id'))
+	human_id = db.Column(db.Integer, db.ForeignKey('humans.id'))
 
 	def __init__(self, text, human_id):
 		self.text = text
