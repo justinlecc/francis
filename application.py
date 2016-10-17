@@ -5,8 +5,8 @@ from webserver.router import Router
 from assessment.assessment_worker import AssessmentWorker
 
 # Config
-# logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
-logging.basicConfig(filename='logs/app.log', level=logging.DEBUG)
+logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
+# logging.basicConfig(filename='logs/app.log', level=logging.DEBUG)
 
 # Initialize app
 application = Flask(__name__)
