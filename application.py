@@ -15,9 +15,8 @@ if os.environ['FRANCIS_ENV'] == 'LOCAL':
 	logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
 	print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
 else:
-	logging.basicConfig(filename='/home/ec2-user/francisapp.log', level=logging.DEBUG)
-	# print("APP LOGGING TO " + os.getcwd() + "/francisapp.log")
-	print("APP LOGGING TO " + "/home/ec2-user/francisapp.log")
+	logging.basicConfig(filename='francisapp.log', level=logging.DEBUG)
+	print("APP LOGGING TO " + os.getcwd() + "/francisapp.log")
 
 # Initialize app
 application = Flask(__name__)
