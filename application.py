@@ -5,6 +5,12 @@ from webserver.router import Router
 from assessment.assessment_worker import AssessmentWorker
 
 # Config log files
+# Logging levels
+# 	1. debug    - detailed info
+#   2. info     - confirmation that things are working
+#   3. warning  - something unexpected happened
+# 	4. error    - a function failed
+#   5. critical - the application failed
 if os.environ['FRANCIS_ENV'] == 'LOCAL':
 	logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
 else:
