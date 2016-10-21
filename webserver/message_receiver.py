@@ -1,4 +1,4 @@
-from db import Humans, Messages
+from db.db import Humans, Messages
 
 class MessageReceiver():
 

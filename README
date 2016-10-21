@@ -11,8 +11,16 @@ SETUP
 			python db.py db migrate
 		Run the migrations on your DB
 			python db.py db upgrade
-		Run the application
+		Run the webserver
 			python application.py
+		Run the assessment worker
+			python application.py assessment start
+			-or-
+			GET/POST /workers/assessment/start
+		Stop the assessment worker
+			python application.py assessment stop
+			-or-
+			GET/POST /workers/assessment/stop
 
 	RESOURCES
 		Setting up python3 anc creating virtual environment

@@ -1,5 +1,0 @@
-version: 1
-cron:
- - name: "state assessment"
-   url: "/assessmentolddontrun"
-   schedule: "*/1 * * * *"

@@ -2,7 +2,7 @@ import os, sys, logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from webserver.router import Router
-from assessment.assessment_worker import AssessmentWorker
+from workers.assessment.assessment_worker import AssessmentWorker
 
 # Config log files
 # Logging levels
@@ -30,7 +30,7 @@ router.applyRoutes(app, db)
 
 if __name__ == "__main__":
 
-	# Initialization is a worker?
+	# Run a worker
 	if len(sys.argv) >= 2:
 
 		if "assessment" == sys.argv[1]:
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 		else:
 			print("ERROR: Unknown process type in application.py")
 	
-	# Initialization is a webserver
+	# Run the webserver
 	# Note: Application will not be started here on Elastic Beanstalk.
 	#		Instead, EB will import the 'application' object and call
 	#       the 'run' method on it. Having app.run() here is for running
