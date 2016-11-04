@@ -1,8 +1,8 @@
 import os, sys, logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from webserver.router import Router
-from workers.assessment.assessment_worker import AssessmentWorker
+from modules.router import Router
+from modules.assessment_worker import AssessmentWorker
 
 # Config log files
 # Logging levels
@@ -26,7 +26,7 @@ db = SQLAlchemy(app)
 
 # Apply routes
 router = Router()
-router.applyRoutes(app, db)
+router.apply_routes(app)
 
 if __name__ == "__main__":
 
@@ -35,16 +35,16 @@ if __name__ == "__main__":
 
 		if "assessment" == sys.argv[1]:
 			if len(sys.argv) == 3:
-				assessmentWorker = AssessmentWorker('/tmp/assessment-worker.pid')
-				assessmentWorker.setDb(db)
+				assessment_worker = AssessmentWorker('/tmp/assessment-worker.pid')
+				# assessment_worker.set_db(db)
 				if "start" == sys.argv[2]:
-					assessmentWorker.start()
+					assessment_worker.start()
 				elif "restart" == sys.argv[2]:
-					assessmentWorker.restart()
+					assessment_worker.restart()
 				elif "stop" == sys.argv[2]:
-					assessmentWorker.stop()
+					assessment_worker.stop()
 				elif "foreground" == sys.argv[2]:
-					assessmentWorker.run()
+					assessment_worker.run()
 				else:
 					print("ERROR: Unknown argument for the assessment worker")
 			else:
