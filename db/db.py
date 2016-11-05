@@ -9,7 +9,6 @@ application = Flask(__name__)
 app = application
 
 # DB setup
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://francisdb:nicebot99@francis-staging.c6yeo5k4ngoz.us-west-2.rds.amazonaws.com:6666/francisdb'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 
 # Config can be done using:
