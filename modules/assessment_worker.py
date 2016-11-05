@@ -15,7 +15,7 @@ class AssessmentWorker(Daemon):
     def _send_sms(self):
         outgoing_sms = db.session.query(OutgoingSms)\
             .filter(OutgoingSms.sent == False)\
-            .filter(OutgoingSms.send_at >= datetime.datetime.utcnow()).all()
+            .filter(OutgoingSms.send_at <= datetime.datetime.utcnow()).all()
 
         logging.debug(outgoing_sms)
 
@@ -40,18 +40,25 @@ class AssessmentWorker(Daemon):
                         max_price="0.01"
                     )
 
+                    logging.info("Sms send to " + sms.human.phone_number + " with the message: " + sms.text)
+
                     # TODO: There may be a quicker way to send messages when you don't care about a
                     #   synchronous status reply. Message statuses can also be sent asynch.
                     if m.status == "queued":
 
-                        # update sms.sent to true?
+                        logging.debug("Sending sms via Twilio succeeded")
+
+                        # Update sms in DB to sent == True
+                        sms.sent = True
+                        db.session.commit()
+                        sms.update().values(sent=True)
                     
                     else:
 
-                        # there was an error so try again?
-                        
-                    logging.debug(m)
-                    logging.info("Sms send to " + sms.human.phone_number + " with the message: " + sms.text)
+                        # There was an error... Better luck next time!
+                        #   Abra-kadabra, ballin' in orlando.
+                        logging.error("Sending sms via Twilio failed with status - " + m.status)
+                        logging.debug(m)
 
                 else:
                     logging.error("Skipped message because I'm only sending messages to myself!")
@@ -85,18 +92,20 @@ class AssessmentWorker(Daemon):
         counter = 1
         while True:
 
-            self._send_sms()
-
             logging.debug("Assessment iteration since startup " + str(counter))
             counter += 1
 
-            continue
+            try:
+                self._send_sms()
+
+            except Exception as e:
+                logging.error("Failed to send sms - " + str(e))
 
             try:
                 states = self._create_states()            
 
             except Exception as e:
-                logging.error("Failed to create the states")
+                logging.error("Failed to create the states - " + str(e))
                 sys.exit(1)
 
             for state in states:
