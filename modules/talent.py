@@ -1,5 +1,5 @@
 import logging, datetime, pytz, parsedatetime
-from modules.sms_messages import SmsSender
+from modules.sms_io import SmsIo
 from modules.helpers import naivelocal_to_naiveutc
 
 # Represents a collection of actions that serve a general facility.
@@ -127,8 +127,8 @@ class SetReminderNotification(Action):
         # TODO: store local timezone somewhere
         utc_naive = naivelocal_to_naiveutc(naive, "Canada/Eastern")
 
-        sms_sender = SmsSender()
-        sms_sender.sms(state.human, command['text'], utc_naive)
+        sms_io = SmsIo()
+        sms_io.send_sms(state.human, command['text'], utc_naive)
 
 
 # ReminderNotifications

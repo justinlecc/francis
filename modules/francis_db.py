@@ -3,34 +3,37 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+from modules.francis_flask import FrancisFlask
 
-# App instance
-application = Flask(__name__)
-app = application
+# Sqalchemy singleton database
+class FrancisDb():
 
-# DB setup
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
+    # Singleton instance.
+    __instance = None
 
-# Config can be done using:
-# app.config.from_pyfile('config.cfg')
-db = SQLAlchemy(app)
+    # Instantiation creates/returns the singleton instance.
+    def __new__(cls):
+
+        if FrancisDb.__instance is None:
+
+            FrancisDb.__instance = SQLAlchemy(FrancisFlask())
+
+        return FrancisDb.__instance
+
+# Database instance for setup
+db = FrancisDb()
 
 # Migration command setup
-migrate = Migrate(app, db)
-manager = Manager(app)
+migrate = Migrate(FrancisFlask(), db)
+manager = Manager(FrancisFlask())
 manager.add_command('db', MigrateCommand)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #
-# SCHEMA
+# SCHEMA ORMs
 #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Human
-# Represents a human user of Francis. Currently assumes
-# each human only has one phone number.
-#     id: primary key
-#     phone_number: human's phone number
 class Human(db.Model):
 
     __tablename__ = 'humans'
@@ -65,11 +68,3 @@ class OutgoingSms(db.Model):
     send_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-#
-# RUN MANAGER (MIGRATIONS)
-#
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-if __name__ == "__main__":
-    manager.run()

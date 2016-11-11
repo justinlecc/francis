@@ -1,6 +1,6 @@
-from flask import Flask, request
+from flask import request
 import subprocess
-from modules.sms_messages import SmsReceiver
+from modules.sms_io import SmsIo
 import twilio.twiml	
 class Router():
 
@@ -21,21 +21,22 @@ class Router():
 		# Endpoint for Twilio sms messages
 		@app.route("/twilio/sms", methods=['POST'])
 		def twilio_sms():
-			sms_receiver = SmsReceiver()
+			sms_io = SmsIo()
 			from_phone_number = request.values.get("From")
 			text = request.values.get("Body")
-			sms_receiver.sms(from_phone_number, text)
+			sms_io.receive_sms(from_phone_number, text)
 			return '/twilio/sms returned'
 		# Endpoint for sms test messages
 		@app.route("/simulator/sms", methods=['POST'])
 		def simulator_sms():
-			sms_receiver = SmsReceiver()
+			sms_io = SmsIo()
 			from_phone_number = request.values.get("From")
 			text = request.values.get("Body")
-			sms_receiver.sms(from_phone_number, text)
+			sms_io.receive_sms(from_phone_number, text)
 			return '/simulator/sms returned'
 
 		# ASSESSMENT WORKER ENDPOINTS
+
 		# Start the assessment worker
 		@app.route("/workers/assessment/start", methods=['GET', 'POST'])
 		def assessment_start():

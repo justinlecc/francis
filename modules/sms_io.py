@@ -1,13 +1,15 @@
 import logging
-from db.db import Human, IncomingSms, OutgoingSms, db
+from modules.francis_db import FrancisDb, Human, IncomingSms, OutgoingSms
 
-class SmsReceiver():
+class SmsIo():
 
     def __init__(self):
         pass
 
-    def sms(self, from_phone_number, text):
+    def receive_sms(self, from_phone_number, text):
         
+        db = FrancisDb()
+
         try:
 
             # Get the human from the DB
@@ -30,13 +32,11 @@ class SmsReceiver():
 
         return
 
-class SmsSender():
-
-    def __init__(self):
-        pass
-
     # Schedule a message to be sent
-    def sms(self, human, text, senddatetime):
+    def send_sms(self, human, text, senddatetime):
+
+        db = FrancisDb()
+
         if senddatetime.tzinfo != None:
             logging.error("senddatetime parameter in SmsSender::sms had timezone information (which it cannot)")
             return

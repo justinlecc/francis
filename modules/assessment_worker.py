@@ -1,7 +1,7 @@
 import time, logging, sys, datetime, os
 from twilio.rest import TwilioRestClient
 from lib.daemon import Daemon
-from db.db import Human, IncomingSms, OutgoingSms, db
+from modules.francis_db import Human, IncomingSms, OutgoingSms, FrancisDb
 from modules.talent import TalentNetwork
 from modules.state import SmsState
 
@@ -13,6 +13,7 @@ class AssessmentWorker(Daemon):
     #   Sending sms docs: https://www.twilio.com/docs/api/rest/sending-messages.
     #   TODO: Add 'StatusCallback' url to messages in order to update the outgoing_sms table.
     def _send_sms(self):
+        db = FrancisDb()
         outgoing_sms = db.session.query(OutgoingSms)\
             .filter(OutgoingSms.sent == False)\
             .filter(OutgoingSms.send_at <= datetime.datetime.utcnow()).all()
@@ -71,6 +72,7 @@ class AssessmentWorker(Daemon):
             
 
     def _create_states(self):
+        db = FrancisDb()
         humans = db.session.query(Human).all()
         states = []
         for human in humans:
@@ -85,7 +87,7 @@ class AssessmentWorker(Daemon):
 
     # Triggers an assessment of current DB state every INTERVAL_SECONDS
     def run(self):
-
+        
         # Get TalentNetwork
         talent_network = TalentNetwork()
     

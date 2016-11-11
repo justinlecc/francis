@@ -1,63 +1,142 @@
-import os, sys, logging
-from flask import Flask
+import os, sys, logging, subprocess
 from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
+from modules.francis_flask import FrancisFlask
+from modules.francis_db import FrancisDb
 from modules.router import Router
 from modules.assessment_worker import AssessmentWorker
 
 # Config log files
 # Logging levels
-# 	1. debug    - detailed info
+#   1. debug    - detailed info
 #   2. info     - confirmation that things are working
 #   3. warning  - something unexpected happened
-# 	4. error    - a function failed
+#   4. error    - a function failed
 #   5. critical - the application failed
 if os.environ['FRANCIS_ENV'] == 'LOCAL':
-	logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
-	print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
+    logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
+    # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
 else:
-	# logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
-	# print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
-	logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-	print("APP LOGGING TO stdout")
+    # logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
+    # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    print("APP LOGGING TO stdout")
 
-# Initialize app
-application = Flask(__name__)
-app = application
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
-db = SQLAlchemy(app)
+# Main entrypoint of Francis
+class FrancisApp():
 
-# Apply routes
-router = Router()
-router.apply_routes(app)
+    def __init__(self, flask_app, db):
+        self.flask_app = flask_app
+        self.db = db
 
-if __name__ == "__main__":
+    def run(self, **kwargs):
 
-	# Run a worker
-	if len(sys.argv) >= 2:
+        # Run the whole application
+        if ('process_type' not in kwargs) or \
+            kwargs['process_type'] is None:
 
-		if "assessment" == sys.argv[1]:
-			if len(sys.argv) == 3:
-				assessment_worker = AssessmentWorker('/tmp/assessment-worker.pid')
-				# assessment_worker.set_db(db)
-				if "start" == sys.argv[2]:
-					assessment_worker.start()
-				elif "restart" == sys.argv[2]:
-					assessment_worker.restart()
-				elif "stop" == sys.argv[2]:
-					assessment_worker.stop()
-				elif "foreground" == sys.argv[2]:
-					assessment_worker.run()
-				else:
-					print("ERROR: Unknown argument for the assessment worker")
-			else:
-				print("ERROR: Incorrect number of parameters for the assessment worker")
-		else:
-			print("ERROR: Unknown process type in application.py")
-	
-	# Run the webserver
-	# Note: Application will not be started here on Elastic Beanstalk.
-	#		Instead, EB will import the 'application' object and call
-	#       the 'run' method on it. Having app.run() here is for running
-	#       the application locally (or other non-EB environments).
-	else:
-		app.run()
+            # Start the assessment process
+            err = subprocess.call(["python", "application.py", "assessment", "start"])
+            if err:
+                logging.error("Failed to create a subprocess to run assessment worker")
+
+            # Run this process as a webserver
+            # Apply routes
+            router = Router()
+            router.apply_routes(self.flask_app)
+
+            try:
+                self.flask_app.run()
+
+            except Exception as e:
+                logging.error("Failed to run the webserver process (spot1)- " + str(e))
+
+
+        # Run this process as a webserver
+        if kwargs['process_type'] == 'webserver':
+
+            # Apply routes
+            router = Router()
+            router.apply_routes(self.flask_app)
+
+            try:
+                self.flask_app.run()
+
+            except Exception as e:
+                logging.error("Failed to run the webserver process (spot2)- " + str(e))
+
+        # Run this process as an assessment worker
+        elif 'assessment' == kwargs['process_type']:
+
+            try:
+                assessment_worker = AssessmentWorker('/tmp/assessment-worker.pid')
+
+                if 'param1' in kwargs:
+
+                    if "start" == kwargs['param1']:
+                        assessment_worker.start()
+                    elif "restart" == kwargs['param1']:
+                        assessment_worker.restart()
+                    elif "stop" == kwargs['param1']:
+                        assessment_worker.stop()
+                    elif "foreground" == kwargs['param1']:
+                        assessment_worker.run()
+                    else:
+                        logging.error("Unknown action for the assessment worker.")
+                        return
+                else:
+                    logging.error("'param1' for the assessment process was not specified.")
+                    return
+
+            except Exception as e:
+                logging.error("Failed to run the assessment process - " + str(e))
+
+        # Run this process as a database management process (migration and upgrades)
+        elif 'db' == kwargs['process_type']:
+
+            try:
+                self._db_manager()
+
+            except Exception as e:
+                logging.error("Failed to run the DB process - " + str(e))
+
+            return
+
+        else:
+            logging.error("Unknown process type.")
+            return
+
+    def _db_manager(self):
+
+        # Migration command setup
+        migrate = Migrate(self.flask_app, self.db)
+        manager = Manager(self.flask_app)
+        manager.add_command('db', MigrateCommand)
+
+        # NOTE: This works when called as python application.py db migrate/upgrade
+        #   Its innerworking are somewhat magical to me at this point. Would be good
+        #   to provide the manager params in a different way than through 'argv'.
+        manager.run()
+
+
+# Initialize Francis
+application = FrancisApp(FrancisFlask(), FrancisDb())
+
+# Run Francis
+if (__name__ == "__main__"):
+
+    process_type = None
+    param1 = None
+
+    # Parse the command
+    if len(sys.argv) >= 2:
+        process_type = sys.argv[1]
+
+    if len(sys.argv) >= 3:
+        param1 = sys.argv[2]
+
+    # Note: process_type=None will run the webserver process
+    application.run(process_type=process_type, param1=param1)
+
