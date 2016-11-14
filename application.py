@@ -33,29 +33,10 @@ class FrancisApp():
 
     def run(self, **kwargs):
 
-        # Run the whole application
-        if ('process_type' not in kwargs) or \
-            kwargs['process_type'] is None:
-
-            # Start the assessment process
-            err = subprocess.call(["python", "application.py", "assessment", "start"])
-            if err:
-                logging.error("Failed to create a subprocess to run assessment worker")
-
-            # Run this process as a webserver
-            # Apply routes
-            router = Router()
-            router.apply_routes(self.flask_app)
-
-            try:
-                self.flask_app.run()
-
-            except Exception as e:
-                logging.error("Failed to run the webserver process (spot1)- " + str(e))
-
-
         # Run this process as a webserver
-        if kwargs['process_type'] == 'webserver':
+        if ('process_type' not in kwargs) or \
+            kwargs['process_type'] is None or \
+            kwargs['process_type'] == 'webserver':
 
             # Apply routes
             router = Router()
@@ -121,8 +102,13 @@ class FrancisApp():
         manager.run()
 
 
-# Initialize Francis
-application = FrancisApp(FrancisFlask(), FrancisDb())
+# Initialize flask app for AWS to run (named application for aws)
+application = FrancisFlask()
+francis_flask = application
+
+
+# Initialize francis app
+francis_app = FrancisApp(francis_flask, FrancisDb())
 
 # Run Francis
 if (__name__ == "__main__"):
@@ -138,5 +124,5 @@ if (__name__ == "__main__"):
         param1 = sys.argv[2]
 
     # Note: process_type=None will run the webserver process
-    application.run(process_type=process_type, param1=param1)
+    francis_app.run(process_type=process_type, param1=param1)
 
