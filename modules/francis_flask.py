@@ -17,3 +17,6 @@ class FrancisFlask():
             FrancisFlask.__instance.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://francisdb:nicebot99@francis-staging.c6yeo5k4ngoz.us-west-2.rds.amazonaws.com:6666/francisdb' # os.environ['FRANCIS_DB_URI']
 
         return FrancisFlask.__instance
+
+# Place for AWS to send web requests
+application = FrancisFlask()
