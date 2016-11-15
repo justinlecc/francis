@@ -108,7 +108,7 @@ application = FrancisFlask()
 # Initialize francis app
 francis_app = FrancisApp(application, FrancisDb())
 
-print("HELLO TO ALL MY FRIENDS IN THE AWS LOGS!")
+print("AY-YO, AY-YO!!")
 
 # Run Francis
 if (__name__ == "__main__"):
