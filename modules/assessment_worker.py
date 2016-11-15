@@ -5,7 +5,7 @@ from modules.francis_db import Human, IncomingSms, OutgoingSms, FrancisDb
 from modules.talent import TalentNetwork
 from modules.state import SmsState
 
-INTERVAL_SECONDS = 1
+INTERVAL_SECONDS = 3
 
 class AssessmentWorker(Daemon):
 

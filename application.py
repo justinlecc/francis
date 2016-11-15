@@ -104,11 +104,9 @@ class FrancisApp():
 
 # Initialize flask app for AWS to run (named application for aws)
 application = FrancisFlask()
-francis_flask = application
-
 
 # Initialize francis app
-francis_app = FrancisApp(francis_flask, FrancisDb())
+francis_app = FrancisApp(application, FrancisDb())
 
 # Run Francis
 if (__name__ == "__main__"):
