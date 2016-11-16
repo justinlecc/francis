@@ -21,8 +21,12 @@ if os.environ['FRANCIS_ENV'] == 'LOCAL':
 else:
     # logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
     # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
-    # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    print("APP LOGGING TO stdout")
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    print("should be logging to stdout, see next line")
+    logging.debug("can you see this logging message?")
+    print("can you see the logging line above?")
+    # print("APP LOGGING TO stdout")
+    # print("not logging anywhere !")
 
 # Main entrypoint of Francis
 class FrancisApp():
@@ -32,6 +36,8 @@ class FrancisApp():
         self.db = db
 
     def run(self, **kwargs):
+
+        logging.debug("FrancisApp::run called")
 
         # Run this process as a webserver
         if ('process_type' not in kwargs) or \
@@ -103,12 +109,10 @@ class FrancisApp():
 
 
 # Initialize flask app for AWS to run (named application for aws)
-application = FrancisFlask()
+# application = FrancisFlask()
 
 # Initialize francis app
-francis_app = FrancisApp(application, FrancisDb())
-
-print("AY-YO, AY-YO!!")
+application = FrancisApp(FrancisFlask(), FrancisDb())
 
 # Run Francis
 if (__name__ == "__main__"):
@@ -124,5 +128,5 @@ if (__name__ == "__main__"):
         param1 = sys.argv[2]
 
     # Note: process_type=None will run the webserver process
-    francis_app.run(process_type=process_type, param1=param1)
+    application.run(process_type=process_type, param1=param1)
 
