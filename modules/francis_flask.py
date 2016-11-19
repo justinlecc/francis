@@ -12,10 +12,13 @@ class FrancisFlask():
 
         if FrancisFlask.__instance is None:
             # print("Initializing flask with __name__=" + str(__name__))
-            print("Initializing flask with __name__=" + str("__main__"))
+            # print("Initializing flask with __name__=" + str("__main__"))
             # FrancisFlask.__instance = object.__new__(cls)
             # FrancisFlask.__instance = Flask(__name__)
-            FrancisFlask.__instance = Flask("__main__")
+            print("jl package name:")
+            print(__name__.split('.')[0])
+            print("-------------")
+            FrancisFlask.__instance = Flask(__name__.split('.')[0])
             FrancisFlask.__instance.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 
         return FrancisFlask.__instance

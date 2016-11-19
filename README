@@ -21,7 +21,9 @@ SETUP
 			python application.py assessment stop
 			-or-
 			GET/POST /workers/assessment/stop
-
+		Run tests
+			python3 -m tests.testfile
+			*from main folder*
 	RESOURCES
 		Setting up python3 anc creating virtual environment
 		http://www.marinamele.com/2014/07/install-python3-on-mac-os-x-and-use-virtualenv-and-virtualenvwrapper.html

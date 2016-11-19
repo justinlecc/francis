@@ -37,8 +37,6 @@ class FrancisApp():
 
     def run(self, **kwargs):
 
-        logging.debug("FrancisApp::run called")
-
         # Run this process as a webserver
         if ('process_type' not in kwargs) or \
             kwargs['process_type'] is None or \
@@ -119,6 +117,9 @@ if (__name__ == "__main__"):
 
     process_type = None
     param1 = None
+
+    if len(sys.argv) == 1:
+        application.run()
 
     # Parse the command
     if len(sys.argv) >= 2:
