@@ -18,7 +18,7 @@ class FrancisFlask():
             print("jl package name:")
             print(__name__.split('.')[0])
             print("-------------")
-            FrancisFlask.__instance = Flask(__name__.split('.')[0])
+            FrancisFlask.__instance = Flask("__main__")
             FrancisFlask.__instance.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 
         return FrancisFlask.__instance
