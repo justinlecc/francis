@@ -1,4 +1,4 @@
-import logging, datetime, pytz, parsedatetime
+import logging, datetime, pytz, parsedatetime, random
 from modules.sms_io import SmsIo
 from modules.helpers import naivelocal_to_naiveutc
 
@@ -38,7 +38,7 @@ class SetReminderNotification(Action):
         split_command = command.split()
 
         # I got two phones, one for the bitches and one for the dough
-        version = 1
+        version = 2
         if (version == 1) :
 
             # Reminder command
@@ -73,7 +73,7 @@ class SetReminderNotification(Action):
 
         else:
 
-            if split_command[0].lower()[:6] != 'remind':
+            if 'remind' not in command.lower():
                 return None
 
             # parse statuses (https://bear.im/code/parsedatetime/docs/index.html):
@@ -81,15 +81,22 @@ class SetReminderNotification(Action):
             #   1 = parsed as a C{date} 
             #   2 = parsed as a C{time} 
             #   3 = parsed as a C{datetime} 
-            pdt_struct, parse_status = parsedatetime.Calendar().parse(command)
+            pdt_tuple = parsedatetime.Calendar().nlp(command)[0] # Only takes the first one (for now)
 
             # Pick up the phone babe-eh
-            if parse_status == 0:
+            # Check if the parse status was 0 (ie. the command was not parsed)
+            if pdt_tuple[1] == 0:
                 return None
 
-            pdt_dt = datetime.datetime(*pdt_struct[:6])
+            pdt_dt = pdt_tuple[0]
 
-            text = "Reminding you: " + ' '.join(split_command[1:])
+            reminder_intros = [
+                "Don't forget",
+                "Remember when you told me to remind you",
+                "If I remember correctly, I should be reminding you"
+            ]
+
+            text = reminder_intros[random.randint(0, 100) % (len(reminder_intros) - 1)] + ": " + command
 
             return_dict = {
                 'year': pdt_dt.year,
@@ -108,14 +115,10 @@ class SetReminderNotification(Action):
         #
         # Looks if last log item is the command:
         # 'reminder yyyy-mm-dd hh:mm{am|pm} <some message to send>'
-        logging.debug("jl 1")
         if len(state.log) > 0:
-            logging.debug("jl 2")
             if state.log[len(state.log)-1]['type'] == 'incoming_sms':
-                logging.debug("jl 3")
                 command_components = self._parse_command(state.log[len(state.log)-1]['text'])
                 if command_components is not None:
-                    logging.debug("jl 4")
                     return 501 # Cheeky return value
 
         return 499 # Probability * 1000
@@ -134,6 +137,10 @@ class SetReminderNotification(Action):
 
         sms_io = SmsIo()
         sms_io.send_sms(state.human, command['text'], utc_naive)
+
+        # Let the user know what was accomplished
+        message = "I set a reminder for " + naive.strftime("%c") + "."
+        sms_io.send_sms(state.human, message, datetime.datetime.utcnow())
 
 
 # ReminderNotifications
