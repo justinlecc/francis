@@ -1,6 +1,5 @@
 import os
 from flask import Flask
-from modules.router import Router
 
 # Flask singleton
 class FrancisFlask():
@@ -21,8 +20,3 @@ class FrancisFlask():
 
         return FrancisFlask.__instance
 
-# Place for AWS to send web requests
-application = FrancisFlask()
-# Apply routes
-router = Router()
-router.apply_routes(application)
