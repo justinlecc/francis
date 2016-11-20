@@ -25,8 +25,9 @@ else:
     print("should be logging to stdout, see next line")
     logging.debug("can you see this logging message?")
     print("can you see the logging line above?")
-    # print("APP LOGGING TO stdout")
-    # print("not logging anywhere !")
+
+print("JL sys path:")
+print(sys.path)
 
 # Main entrypoint of Francis
 class FrancisApp():
@@ -111,6 +112,8 @@ class FrancisApp():
 
 # Initialize francis app
 application = FrancisApp(FrancisFlask(), FrancisDb())
+# print(vars(FrancisFlask()))
+# exit()
 
 # Run Francis
 if (__name__ == "__main__"):

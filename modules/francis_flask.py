@@ -18,10 +18,10 @@ class FrancisFlask():
             print("jl package name:")
             print(__name__.split('.')[0])
             print("-------------")
-            FrancisFlask.__instance = Flask("__main__")
+            FrancisFlask.__instance = Flask("modules.francis_flask")
             FrancisFlask.__instance.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
 
         return FrancisFlask.__instance
 
 # Place for AWS to send web requests
-# application = FrancisFlask()
+application = FrancisFlask()
