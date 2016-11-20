@@ -59,12 +59,16 @@ if (__name__ == "__main__"):
 
                 if "start" == param1:
                     assessment_worker.start()
+                    exit()
                 elif "restart" == param1:
                     assessment_worker.restart()
+                    exit()
                 elif "stop" == param1:
                     assessment_worker.stop()
+                    exit()
                 elif "foreground" == param1:
                     assessment_worker.run()
+                    exit()
                 else:
                     logging.error("Unknown action for the assessment worker.")
                     exit()
@@ -94,8 +98,5 @@ if (__name__ == "__main__"):
 
         exit()
 
-    else:
-        logging.error("Unknown process type.")
-        exit()
 
 

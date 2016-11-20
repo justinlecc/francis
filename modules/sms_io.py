@@ -19,7 +19,6 @@ class SmsIo():
             if from_human is None:
                 from_human = Human(phone_number=from_phone_number)
                 db.session.add(from_human)
-                # db.session.commit()
 
             # Insert the sms into the db
             incoming_sms = IncomingSms(text=text, human=from_human) # TODO: make 'text' db safe?

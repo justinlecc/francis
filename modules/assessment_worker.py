@@ -76,7 +76,6 @@ class AssessmentWorker(Daemon):
         humans = db.session.query(Human).all()
         states = []
         for human in humans:
-            logging.debug("len of incoming_sms " + str(len(human.incoming_sms)))
             states.append(SmsState(human))
 
         # TODO: not sure where this should be. Being used to see changes being
@@ -120,7 +119,6 @@ class AssessmentWorker(Daemon):
                         max_p_talent = talent_p
                 logging.debug("probability of max_p_talent" + str(max_p_talent['p']))
                 if max_p_talent['p'] > 500:
-                    logging.debug("performing action!! @@@@@")
                     # Perform the talent's action
                     max_p_talent['action'].perform(state)
 

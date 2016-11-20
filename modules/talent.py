@@ -38,32 +38,36 @@ class SetReminderNotification(Action):
         split_command = command.split()
 
         # I got two phones, one for the bitches and one for the dough
-        version = 2
+        version = 1
         if (version == 1) :
 
+            # Reminder command
             if split_command[0].lower() != 'reminder':
                 return None
 
+            # Get the date of reminder
             split_date = split_command[1].split('-')
             if len(split_date) != 3:
                 return None
 
-            split_time = split_command[2][:-2].split(':')
-            ampm = split_command[2][-2:]
-            if len(split_time) != 2 or int(split_time[0]) > 12 or (ampm != 'am' and ampm != 'pm'):
+            # Get time of the reminder
+            time_str = split_command[2]
+            logging.debug(time_str)
+            try:
+                time_dt = datetime.datetime.strptime(time_str, "%I:%M%p")
+            except Exception as e:
+                logging.debug("parsing time failed")
                 return None
 
-            if ampm == 'pm':
-                split_time[0] = str( int(split_time[0]) + 12 )
-
+            # Get the text of the reminder
             text = ' '.join(split_command[3:])
 
             return_dict = {
                 'year': int(split_date[0]),
                 'month': int(split_date[1]),
                 'day': int(split_date[2]),
-                'hour': int(split_time[0]),
-                'minute': int(split_time[1]),
+                'hour': int(time_dt.hour),
+                'minute': int(time_dt.minute),
                 'text': text
             }
 
@@ -104,13 +108,14 @@ class SetReminderNotification(Action):
         #
         # Looks if last log item is the command:
         # 'reminder yyyy-mm-dd hh:mm{am|pm} <some message to send>'
+        logging.debug("jl 1")
         if len(state.log) > 0:
-            logging.debug("In here 1" + str(state.log[len(state.log)-1]['type']))
+            logging.debug("jl 2")
             if state.log[len(state.log)-1]['type'] == 'incoming_sms':
-                logging.debug("In here 2")
+                logging.debug("jl 3")
                 command_components = self._parse_command(state.log[len(state.log)-1]['text'])
                 if command_components is not None:
-                    logging.debug("In here 3")
+                    logging.debug("jl 4")
                     return 501 # Cheeky return value
 
         return 499 # Probability * 1000
