@@ -30,8 +30,8 @@ class AssessmentWorker(Daemon):
             # Verify the phone number is well-formed
             if (len(sms.human.phone_number) == 12 and sms.human.phone_number[0] == '+'):
 
-                # In development, only send messages to myself
-                if (sms.human.phone_number == os.environ['FRANCIS_DEVELOPER_PHONE_NUMBER']):
+                # For development, only send messages to myself
+                if (sms.human.phone_number in os.environ['FRANCIS_DEVELOPER_PHONE_NUMBER']):
 
                     # Send the message
                     m = client.messages.create(
