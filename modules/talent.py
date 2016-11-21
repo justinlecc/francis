@@ -80,8 +80,9 @@ class SetReminderNotification(Action):
             #   0 = not parsed at all 
             #   1 = parsed as a C{date} 
             #   2 = parsed as a C{time} 
-            #   3 = parsed as a C{datetime} 
-            pdt_tuple = parsedatetime.Calendar().nlp(command)[0] # Only takes the first one (for now)
+            #   3 = parsed as a C{datetime}
+            local_dt = datetime.datetime.now(pytz.timezone("Canada/Eastern"))
+            pdt_tuple = parsedatetime.Calendar().nlp(command, local_dt)[0] # Only takes the first one (for now)
 
             # Pick up the phone babe-eh
             # Check if the parse status was 0 (ie. the command was not parsed)
@@ -136,11 +137,13 @@ class SetReminderNotification(Action):
         utc_naive = naivelocal_to_naiveutc(naive, "Canada/Eastern")
 
         sms_io = SmsIo()
-        sms_io.send_sms(state.human, command['text'], utc_naive)
 
         # Let the user know what was accomplished
         message = "I set a reminder for " + naive.strftime("%c") + "."
         sms_io.send_sms(state.human, message, datetime.datetime.utcnow())
+
+        # Set the reminder
+        sms_io.send_sms(state.human, command['text'], utc_naive)
 
 
 # ReminderNotifications
