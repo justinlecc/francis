@@ -11,6 +11,11 @@ class Talent():
     def get_likely_action(self, state):
         pass
 
+    # Returns a message that can help the human to understand and use 
+    # this talent.
+    def get_help_message(self):
+        pass
+
 # Represents a specific routine which can be executed in the 'perform' method.
 class Action():
 
@@ -25,30 +30,14 @@ class Action():
     def perform(self, state):
         pass
 
-# Help menu
-# Talent acts as a manual for humans
-class HelpMenu(Talent):
-
-    name = "HelpMenu"
-
-    def get_likely_action(self, state):
-        pass
-
-    def perform(self, state):
-        pass
-
 class DisplayHelp(Action):
 
     name = "DisplayHelp"
-
-    def _parse_command(self, command):
-        pass
 
     def get_likelihood(self, state):
 
         # Log is not empty
         if len(state.log) > 0:
-
             # The last item in the log is an incoming sms
             if state.log[len(state.log)-1]['type'] == 'incoming_sms':
 
@@ -59,23 +48,69 @@ class DisplayHelp(Action):
                 if ('help' == split_message[0].lower()):
 
                     return 800 # Strong probability
-                
-                else:
-                
-                    return 0
+
+        return 0
                 
     # DisplayHelp shows the human two types of help manuals:
     #   1. The help manual of the 'HelpMenu' talent.
     #   2. The help manual of the specified talent.
     def perform(self, state):
-        
-        # TODO: how are we going to access the other talents from here? The TalentNetwork needs this!
 
-        # Check if the human wants a specific talent's manual
-        # TODO: get a list of talents and check which one is specificied, then get the manual.
+        # Get the system's talents
+        talents = TalentNetwork().get_talents()
 
-        # Display the main help manual
-        # TODO: get the 'HelpMenu' manual.
+        split_message = state.log[len(state.log)-1]['text'].split()
+
+        # Check if the human wants help with a specific talent
+        if len(split_message) == 1:
+
+            # Display the main help manual
+            message = "The following are my talents:\n"
+
+            for talent in talents:
+                message += "-" + talent.name + "\n"
+
+            message += '\nSend the message "help <talent name>" for help with that talent.'
+
+        elif len(split_message) > 1:
+
+            message = ""
+            for talent in talents:
+
+                if talent.name.lower() ==  split_message[1].lower():
+                    message = talent.get_help_message()
+
+            if message == "":
+                message = "I don't have any talent's named " + split_message[1] + "."
+
+        else:
+
+            logging.error("DisplayHelp::perform called with an empty (all whitespace) last message")
+
+        # Send the help message to the human
+        SmsIo().send_sms(state.human, message, datetime.datetime.utcnow())
+
+# Help menu
+# Talent acts as a manual for humans
+class HelpMenu(Talent):
+
+    name = "HelpMenu"
+
+    __actions = [DisplayHelp()]
+
+    def get_likely_action(self, state):
+        max_p = -1
+        for action in HelpMenu.__actions:
+            p = action.get_likelihood(state)
+            if p > max_p:
+                max_p = p
+                max_p_action = action
+        return max_p, max_p_action
+
+    # Returns a message that can help the human to understand and use 
+    # this talent.
+    def get_help_message(self):
+        return 'Send me "help" for a list of all talents or "help <talent name>" for help with that talent.'
 
 
 
@@ -88,7 +123,7 @@ class SetReminderNotification(Action):
 
     # If I said it, I can't take my word back.
     def _parse_command(self, command):
-        
+
         split_command = command.split()
 
         # I got two phones, one for the bitches and one for the dough
@@ -106,11 +141,10 @@ class SetReminderNotification(Action):
 
             # Get time of the reminder
             time_str = split_command[2]
-            logging.debug(time_str)
             try:
                 time_dt = datetime.datetime.strptime(time_str, "%I:%M%p")
             except Exception as e:
-                logging.debug("parsing time failed")
+                logging.error("parsing time failed in SetReminderNotification::_parse_command")
                 return None
 
             # Get the text of the reminder
@@ -136,7 +170,13 @@ class SetReminderNotification(Action):
             #   2 = parsed as a C{time} 
             #   3 = parsed as a C{datetime}
             local_dt = datetime.datetime.now(pytz.timezone("Canada/Eastern"))
-            pdt_tuple = parsedatetime.Calendar().nlp(command, local_dt)[0] # Only takes the first one (for now)
+            pdt_tuples = parsedatetime.Calendar().nlp(command, local_dt)
+
+            # Check if no dates were found
+            if pdt_tuples is None:
+                return None
+
+            pdt_tuple = parsedatetime.Calendar().nlp(command, local_dt)[0] # Only takes the first tuple (for now)
 
             # Pick up the phone babe-eh
             # Check if the parse status was 0 (ie. the command was not parsed)
@@ -186,7 +226,6 @@ class SetReminderNotification(Action):
         time_str = str(command['hour']) + ':' + str(command['minute'])
 
         naive = datetime.datetime.strptime (date_str + ' ' + time_str, "%Y-%m-%d %H:%M")
-        # naive = datetime.datetime.strptime (date_str + ' ' + time_str, "%Y-%m-%d %I:%M%p")
         # TODO: store local timezone somewhere
         utc_naive = naivelocal_to_naiveutc(naive, "Canada/Eastern")
 
@@ -218,13 +257,19 @@ class ReminderNotifications(Talent):
                 max_p_action = action
         return max_p, max_p_action
 
+    # Returns a message that can help the human to understand and use 
+    # this talent.
+    def get_help_message(self):
+        return """Send me a message, starting with the word "Remind", that contains the date and/or time you'd to be reminded."""
+
+
 
 # Collection of available talents
 class TalentNetwork():
 
     # List of talents available in the talent network.
     # TODO: put the talents somewhere appropriate.
-    __talents = [ReminderNotifications()]
+    __talents = [ReminderNotifications(), HelpMenu()]
 
     # Singleton instance.
     __instance = None
@@ -238,9 +283,11 @@ class TalentNetwork():
 
         return TalentNetwork.__instance
 
+    def get_talents(self):
+        return TalentNetwork.__talents
+
     def fetch_talent_probabilities(self, state):
         talent_probabilities = []
-
         for talent in self.talents:
             p, action = talent.get_likely_action(state)
             talent_probabilities.append({
