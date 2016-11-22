@@ -25,6 +25,60 @@ class Action():
     def perform(self, state):
         pass
 
+# Help menu
+# Talent acts as a manual for humans
+class HelpMenu(Talent):
+
+    name = "HelpMenu"
+
+    def get_likely_action(self, state):
+        pass
+
+    def perform(self, state):
+        pass
+
+class DisplayHelp(Action):
+
+    name = "DisplayHelp"
+
+    def _parse_command(self, command):
+        pass
+
+    def get_likelihood(self, state):
+
+        # Log is not empty
+        if len(state.log) > 0:
+
+            # The last item in the log is an incoming sms
+            if state.log[len(state.log)-1]['type'] == 'incoming_sms':
+
+                # Split the message into words
+                split_message = state.log[len(state.log)-1]['text'].split()
+
+                # If the first word is help, then this is the action the human wants
+                if ('help' == split_message[0].lower()):
+
+                    return 800 # Strong probability
+                
+                else:
+                
+                    return 0
+                
+    # DisplayHelp shows the human two types of help manuals:
+    #   1. The help manual of the 'HelpMenu' talent.
+    #   2. The help manual of the specified talent.
+    def perform(self, state):
+        
+        # TODO: how are we going to access the other talents from here? The TalentNetwork needs this!
+
+        # Check if the human wants a specific talent's manual
+        # TODO: get a list of talents and check which one is specificied, then get the manual.
+
+        # Display the main help manual
+        # TODO: get the 'HelpMenu' manual.
+
+
+
 # SetReminderNotification
 # An action that sends an sms notification at the desired time.
 # A specific action.
@@ -138,7 +192,7 @@ class SetReminderNotification(Action):
 
         sms_io = SmsIo()
 
-        # Let the user know what was accomplished
+        # Let the human know what was accomplished
         message = "I set a reminder for " + naive.strftime("%c") + "."
         sms_io.send_sms(state.human, message, datetime.datetime.utcnow())
 
