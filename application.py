@@ -19,7 +19,7 @@ if os.environ['FRANCIS_ENV'] == 'LOCAL':
     # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
 else:
-    logging.basicConfig(filename='/tmp/assessment.log', level=logging.DEBUG)
+    logging.basicConfig(filename='/var/log/httpd/access_log', level=logging.DEBUG)
     # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # Initialize Flask here for AWS Elastic Beanstalk
