@@ -19,8 +19,8 @@ if os.environ['FRANCIS_ENV'] == 'LOCAL':
     # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
 else:
-    logging.basicConfig(filename='/home/ec2-user/francis.log', level=logging.DEBUG)
-    # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    # logging.basicConfig(filename='/home/ec2-user/francis.log', level=logging.DEBUG)
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # Initialize Flask here for AWS Elastic Beanstalk
 application = FrancisFlask()
