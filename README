@@ -1,23 +1,22 @@
 SETUP
-	COMMANDS
-	1. Clone francis
-		git clone <this repo> francis
-	2. Create virtual enviroment in francis directory
-		pyvenv venv
-		source venv/bin/activate
-	3. Install packages
-		pip install -r requirements.txt
-	4. Update the migrations for your DB
-		python application.py db migrate
-	5. Run the migrations on your DB
-		python application.py db upgrade
-	6. Run the webserver
-		python application.py
-	7. Verify webserver is running at /status
-	8. Run the assessment process
-		...as a background process
-			python application.py assessment start
-		...as a foreground process
-			python application.py assessment foreground
-	9. Stop the assessment process (if it is in the background)
-		python application.py assessment stop
+1. Clone francis
+	git clone <this repo> francis
+2. Create virtual enviroment in francis directory
+	pyvenv venv
+	source venv/bin/activate
+3. Install packages
+	pip install -r requirements.txt
+4. Update the migrations for your DB
+	python application.py db migrate
+5. Run the migrations on your DB
+	python application.py db upgrade
+6. Run the webserver
+	python application.py
+7. Verify webserver is running at /status
+8. Run the assessment process
+	...as a background process
+		python application.py assessment start
+	...as a foreground process
+		python application.py assessment foreground
+9. Stop the assessment process (if it is in the background)
+	python application.py assessment stop
