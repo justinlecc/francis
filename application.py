@@ -16,36 +16,33 @@ from modules.assessment_worker import AssessmentWorker
 #   5. critical - the application failed
 if os.environ['FRANCIS_ENV'] == 'LOCAL':
     logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
-    # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
 else:
-    # logging.basicConfig(filename='/home/ec2-user/francis.log', level=logging.DEBUG)
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-# Initialize Flask here for AWS Elastic Beanstalk
+# Initialize Flask here for AWS Elastic Beanstalk to import
 application = FrancisFlask()
 
 # Apply routes to Flask
 router = Router()
 router.apply_routes(application)
 
-# Run Francis
 if (__name__ == "__main__"):
 
     process_type = None
     param1 = None
 
+    # This process ran 'python application.py' so run the webserver
     if len(sys.argv) == 1:
         application.run()
 
-    # Parse the command
+    # Otherwise, see what the user wants...
     if len(sys.argv) >= 2:
         process_type = sys.argv[1]
 
     if len(sys.argv) >= 3:
         param1 = sys.argv[2]
 
-    # Run this process as an assessment worker
+    # Run this as an assessment process
     if 'assessment' == process_type:
 
         try:
@@ -75,7 +72,7 @@ if (__name__ == "__main__"):
         except Exception as e:
             logging.error("Failed to run the assessment process - " + str(e))
 
-    # Run this process as a database management process (migration and upgrades)
+    # Run this as a database management process (migration and upgrades)
     elif 'db' == process_type:
 
         try:
@@ -91,8 +88,4 @@ if (__name__ == "__main__"):
 
         except Exception as e:
             logging.error("Failed to run the DB process - " + str(e))
-
-        exit()
-
-
 
