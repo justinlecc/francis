@@ -37,5 +37,5 @@ class SmsState(State):
         # Sort log
         self.log = sorted(log, key=lambda k: k['datetime'])
 
-        logging.debug(self.log)
+        logging.debug(self.log[-3:])
 

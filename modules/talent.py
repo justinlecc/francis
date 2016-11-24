@@ -13,7 +13,7 @@ class Talent():
 
     # Returns a message that can help the human to understand and use 
     # this talent.
-    def get_help_message(self):
+    def get_manual_message(self):
         pass
 
 # Represents a specific routine which can be executed in the 'perform' method.
@@ -30,9 +30,9 @@ class Action():
     def perform(self, state):
         pass
 
-class DisplayHelp(Action):
+class DisplayManual(Action):
 
-    name = "DisplayHelp"
+    name = "DisplayManual"
 
     def get_likelihood(self, state):
 
@@ -44,16 +44,16 @@ class DisplayHelp(Action):
                 # Split the message into words
                 split_message = state.log[len(state.log)-1]['text'].split()
 
-                # If the first word is help, then this is the action the human wants
-                if ('help' == split_message[0].lower()):
+                # If the first word is 'manual', then this is the action the human wants
+                if ('manual' == split_message[0].lower()):
 
                     return 800 # Strong probability
 
         return 0
                 
-    # DisplayHelp shows the human two types of help manuals:
-    #   1. The help manual of the 'HelpMenu' talent.
-    #   2. The help manual of the specified talent.
+    # DisplayManual shows the human two types of manuals:
+    #   1. The manual of the 'ManualMenu' talent.
+    #   2. The manual of the specified talent.
     def perform(self, state):
 
         # Get the system's talents
@@ -61,16 +61,16 @@ class DisplayHelp(Action):
 
         split_message = state.log[len(state.log)-1]['text'].split()
 
-        # Check if the human wants help with a specific talent
+        # Check if the human wants the manual of a specific talent
         if len(split_message) == 1:
 
-            # Display the main help manual
+            # Display the main manual
             message = "The following are my talents:\n"
 
             for talent in talents:
                 message += "-" + talent.name + "\n"
 
-            message += '\nSend the message "help <talent name>" for help with that talent.'
+            message += '\nSend the message "Manual <talent name>" for help with that talent.'
 
         elif len(split_message) > 1:
 
@@ -78,29 +78,29 @@ class DisplayHelp(Action):
             for talent in talents:
 
                 if talent.name.lower() ==  split_message[1].lower():
-                    message = talent.get_help_message()
+                    message = talent.get_manual_message()
 
             if message == "":
                 message = "I don't have any talent's named " + split_message[1] + "."
 
         else:
 
-            logging.error("DisplayHelp::perform called with an empty (all whitespace) last message")
+            logging.error("DisplayManual::perform called with an empty (all whitespace) last message")
 
-        # Send the help message to the human
+        # Send the manual to the human
         SmsIo().send_sms(state.human, message, datetime.datetime.utcnow())
 
-# Help menu
+# Manual menu
 # Talent acts as a manual for humans
-class HelpMenu(Talent):
+class ManualMenu(Talent):
 
-    name = "HelpMenu"
+    name = "ManualMenu"
 
-    __actions = [DisplayHelp()]
+    __actions = [DisplayManual()]
 
     def get_likely_action(self, state):
         max_p = -1
-        for action in HelpMenu.__actions:
+        for action in ManualMenu.__actions:
             p = action.get_likelihood(state)
             if p > max_p:
                 max_p = p
@@ -109,8 +109,8 @@ class HelpMenu(Talent):
 
     # Returns a message that can help the human to understand and use 
     # this talent.
-    def get_help_message(self):
-        return 'Send me "help" for a list of all talents or "help <talent name>" for help with that talent.'
+    def get_manual_message(self):
+        return 'Send me "manual" for a list of all talents or "manual <talent name>" for the that talent\'s manual.'
 
 
 
@@ -121,90 +121,52 @@ class SetReminderNotification(Action):
 
     name = "SetReminderNotification"
 
-    # If I said it, I can't take my word back.
     def _parse_command(self, command):
 
         split_command = command.split()
 
-        # I got two phones, one for the bitches and one for the dough
-        version = 2
-        if (version == 1) :
+        if 'remind' not in command.lower():
+            return None
 
-            # Reminder command
-            if split_command[0].lower() != 'reminder':
-                return None
+        # parse statuses (https://bear.im/code/parsedatetime/docs/index.html):
+        #   0 = not parsed at all 
+        #   1 = parsed as a C{date} 
+        #   2 = parsed as a C{time} 
+        #   3 = parsed as a C{datetime}
+        local_dt = datetime.datetime.now(pytz.timezone("Canada/Eastern"))
+        pdt_tuples = parsedatetime.Calendar().nlp(command, local_dt)
 
-            # Get the date of reminder
-            split_date = split_command[1].split('-')
-            if len(split_date) != 3:
-                return None
+        # Check if no dates were found
+        if pdt_tuples is None:
+            return None
 
-            # Get time of the reminder
-            time_str = split_command[2]
-            try:
-                time_dt = datetime.datetime.strptime(time_str, "%I:%M%p")
-            except Exception as e:
-                logging.error("parsing time failed in SetReminderNotification::_parse_command")
-                return None
+        pdt_tuple = parsedatetime.Calendar().nlp(command, local_dt)[0] # Only takes the first tuple (for now)
 
-            # Get the text of the reminder
-            text = ' '.join(split_command[3:])
+        # Check if the parse status was 0 (ie. the command was not parsed)
+        if pdt_tuple[1] == 0:
+            return None
 
-            return_dict = {
-                'year': int(split_date[0]),
-                'month': int(split_date[1]),
-                'day': int(split_date[2]),
-                'hour': int(time_dt.hour),
-                'minute': int(time_dt.minute),
-                'text': text
-            }
+        pdt_dt = pdt_tuple[0]
 
-        else:
+        reminder_intros = [
+            "Don't forget",
+            "Remember when you told me to remind you",
+            "If I remember correctly, I should be reminding you"
+        ]
 
-            if 'remind' not in command.lower():
-                return None
+        text = reminder_intros[random.randint(0, 100) % (len(reminder_intros) - 1)] + ": " + command
 
-            # parse statuses (https://bear.im/code/parsedatetime/docs/index.html):
-            #   0 = not parsed at all 
-            #   1 = parsed as a C{date} 
-            #   2 = parsed as a C{time} 
-            #   3 = parsed as a C{datetime}
-            local_dt = datetime.datetime.now(pytz.timezone("Canada/Eastern"))
-            pdt_tuples = parsedatetime.Calendar().nlp(command, local_dt)
-
-            # Check if no dates were found
-            if pdt_tuples is None:
-                return None
-
-            pdt_tuple = parsedatetime.Calendar().nlp(command, local_dt)[0] # Only takes the first tuple (for now)
-
-            # Pick up the phone babe-eh
-            # Check if the parse status was 0 (ie. the command was not parsed)
-            if pdt_tuple[1] == 0:
-                return None
-
-            pdt_dt = pdt_tuple[0]
-
-            reminder_intros = [
-                "Don't forget",
-                "Remember when you told me to remind you",
-                "If I remember correctly, I should be reminding you"
-            ]
-
-            text = reminder_intros[random.randint(0, 100) % (len(reminder_intros) - 1)] + ": " + command
-
-            return_dict = {
-                'year': pdt_dt.year,
-                'month': pdt_dt.month,
-                'day': pdt_dt.day,
-                'hour': pdt_dt.hour,
-                'minute': pdt_dt.minute,
-                'text': text
-            }            
+        return_dict = {
+            'year': pdt_dt.year,
+            'month': pdt_dt.month,
+            'day': pdt_dt.day,
+            'hour': pdt_dt.hour,
+            'minute': pdt_dt.minute,
+            'text': text
+        }            
 
         return return_dict
 
-    # I swear she do the most.
     def get_likelihood(self, state):
         # Naive first model
         #
@@ -218,7 +180,6 @@ class SetReminderNotification(Action):
 
         return 499 # Probability * 1000
 
-    # Fuckwithmeyouknowigotit
     def perform(self, state):
 
         command = self._parse_command(state.log[len(state.log)-1]['text'])
@@ -259,8 +220,11 @@ class ReminderNotifications(Talent):
 
     # Returns a message that can help the human to understand and use 
     # this talent.
-    def get_help_message(self):
-        return """Send me a message, starting with the word "Remind", that contains the date and/or time you'd to be reminded."""
+    def get_manual_message(self):
+        return """\
+        Send me a message, starting with the word "Remind", that contains the date and/or time you'd to be reminded.\
+        For example: "Remind me tomorrow at 7pm to pickup Ash."
+        """
 
 
 
@@ -269,7 +233,7 @@ class TalentNetwork():
 
     # List of talents available in the talent network.
     # TODO: put the talents somewhere appropriate.
-    __talents = [ReminderNotifications(), HelpMenu()]
+    __talents = [ReminderNotifications(), ManualMenu()]
 
     # Singleton instance.
     __instance = None
