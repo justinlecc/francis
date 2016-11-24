@@ -1,47 +1,98 @@
-import os
-from flask import Flask, request
+import os, sys, logging, subprocess
 from flask_sqlalchemy import SQLAlchemy
-from db import Human, Message
-import twilio.twiml	
-import pprint
-import time
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
+from modules.francis_flask import FrancisFlask
+from modules.francis_db import FrancisDb
+from modules.router import Router
+from modules.assessment_worker import AssessmentWorker
 
-application = Flask(__name__)
-app = application
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['FRANCIS_DB_URI']
-db = SQLAlchemy(app)
+# Config log files
+# Logging levels
+#   1. debug    - detailed info
+#   2. info     - confirmation that things are working
+#   3. warning  - something unexpected happened
+#   4. error    - a function failed
+#   5. critical - the application failed
+if os.environ['FRANCIS_ENV'] == 'LOCAL':
+    logging.basicConfig(filename=os.environ['FRANCIS_LOGFILE'], level=logging.DEBUG)
+    # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    # print("APP LOGGING TO " + os.environ['FRANCIS_LOGFILE'])
+else:
+    # logging.basicConfig(filename='/home/ec2-user/francis.log', level=logging.DEBUG)
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-@app.route("/sms", methods=['POST']) # endpoint for Twilio sms messages
-def incoming_sms():
+# Initialize Flask here for AWS Elastic Beanstalk
+application = FrancisFlask()
 
-	# TODO: find/create a logging system
-	# Log incoming message
-	# with open('sms_posts.log', 'a') as f:
-	# 	f.write("\n\n===================================\n\n")
-	# 	f.write(time.strftime("%c\n"))
-	# 	pprint.pprint(vars(request.values), stream=f)
-	# 	f.write("\n\n===================================\n\n")
-	output_html = 'hello world'
+# Apply routes to Flask
+router = Router()
+router.apply_routes(application)
 
-	# Values in the sms
-	sms_from_phone_number = request.values.get("From")
-	sms_text = request.values.get("Body")
+# Run Francis
+if (__name__ == "__main__"):
 
-	# Get the human from the DB
-	from_human = db.session.query(Human).filter_by(phone_number=sms_from_phone_number).first()
-	
-	# Create the human if it does not exist
-	if from_human is None:
-		from_human = Human(sms_from_phone_number)
-		db.session.add(from_human)
-		db.session.commit()
+    process_type = None
+    param1 = None
 
-	# Insert the sms into the db
-	message = Message(sms_text, from_human.id)
-	db.session.add(message)
-	db.session.commit()
+    if len(sys.argv) == 1:
+        application.run()
 
-	return output_html
+    # Parse the command
+    if len(sys.argv) >= 2:
+        process_type = sys.argv[1]
 
-if __name__ == "__main__":
-    app.run()
+    if len(sys.argv) >= 3:
+        param1 = sys.argv[2]
+
+    # Run this process as an assessment worker
+    if 'assessment' == process_type:
+
+        try:
+            assessment_worker = AssessmentWorker('/tmp/assessment-worker.pid')
+
+            if 'param1' is not None:
+
+                if "start" == param1:
+                    assessment_worker.start()
+                    exit()
+                elif "restart" == param1:
+                    assessment_worker.restart()
+                    exit()
+                elif "stop" == param1:
+                    assessment_worker.stop()
+                    exit()
+                elif "foreground" == param1:
+                    assessment_worker.run()
+                    exit()
+                else:
+                    logging.error("Unknown action for the assessment worker.")
+                    exit()
+            else:
+                logging.error("'param1' for the assessment process was not specified.")
+                exit()
+
+        except Exception as e:
+            logging.error("Failed to run the assessment process - " + str(e))
+
+    # Run this process as a database management process (migration and upgrades)
+    elif 'db' == process_type:
+
+        try:
+            # Migration command setup
+            migrate = Migrate(application, FrancisDb())
+            manager = Manager(application)
+            manager.add_command('db', MigrateCommand)
+
+            # NOTE: This works when called as python application.py db migrate/upgrade
+            #   Its innerworking are somewhat magical to me at this point. Would be good
+            #   to provide the manager params in a different way than through 'argv'.
+            manager.run()
+
+        except Exception as e:
+            logging.error("Failed to run the DB process - " + str(e))
+
+        exit()
+
+
+
