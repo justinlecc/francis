@@ -1,56 +1,23 @@
 SETUP
 	COMMANDS
-		Create virtual enviroment
-			pyvenv francis-env
-			source francis-env/bin/activate
-		Install packages
-			pip install -r requirements.txt
-		Add packages to application
-			pip freeze > requirements.txt
-		Update the migrations for your DB
-			python db.py db migrate
-		Run the migrations on your DB
-			python db.py db upgrade
-		Run the webserver
-			python application.py
-		Run the assessment worker
+	1. Clone francis
+		git clone <this repo> francis
+	2. Create virtual enviroment in francis directory
+		pyvenv venv
+		source venv/bin/activate
+	3. Install packages
+		pip install -r requirements.txt
+	4. Update the migrations for your DB
+		python application.py db migrate
+	5. Run the migrations on your DB
+		python application.py db upgrade
+	6. Run the webserver
+		python application.py
+	7. Verify webserver is running at /status
+	8. Run the assessment process
+		...as a background process
 			python application.py assessment start
-			-or-
-			GET/POST /workers/assessment/start
-		Stop the assessment worker
-			python application.py assessment stop
-			-or-
-			GET/POST /workers/assessment/stop
-		Run tests
-			python3 -m tests.testfile
-			*from main folder*
-	RESOURCES
-		Setting up python3 anc creating virtual environment
-		http://www.marinamele.com/2014/07/install-python3-on-mac-os-x-and-use-virtualenv-and-virtualenvwrapper.html
-		Setting up flask app
-			Flask: https://www.youtube.com/watch?v=X1k36Pt-vzQ&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l&index=2
-			SQL`Alchemy & PostgreSQL: https://www.youtube.com/watch?v=PJK950Gp780&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l&index=3
-		Setting up migrations
-			Flask-Migrate: https://www.youtube.com/watch?v=BAOfjPuVby0
-
-TWILIO
-	Incoming SMS
-		'AccountSid': '...db6d9a51...',
-	    'ApiVersion': '2010-04-01',
-	    'Body': 'Hi how are you?',
-	    'From': '+13067776666',
-	    'FromCity': 'SASKATOON',
-	    'FromCountry': 'CA',
-	    'FromState': 'SK',
-	    'FromZip': '',
-	    'MessageSid': 'SM605641f...',
-	    'NumMedia': '0',
-	    'NumSegments': '1',
-	    'SmsMessageSid': 'SM605641...',
-	    'SmsSid': 'SM605641f640...',
-	    'SmsStatus': 'received',
-	    'To': '+13066667777',
-	    'ToCity': '',
-	    'ToCountry': 'CA',
-	    'ToState': 'Saskatchewan',
-	    'ToZip': ''
+		...as a foreground process
+			python application.py assessment foreground
+	9. Stop the assessment process (if it is in the background)
+		python application.py assessment stop
